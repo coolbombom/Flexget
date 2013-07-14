@@ -315,7 +315,7 @@ def get_first_result(tmdb_function, value):
         value = value.encode('utf-8')
     if isinstance(value, basestring):
         value = quote(value, safe=b'')
-    url = '%s/3/%s?api_key=%s&append_to_response=images&query=%s' % (server, tmdb_function, api_key, value)
+    url = '%s/3/%s?api_key=%s&append_to_response=images&language=%s&query=%s' % (server, tmdb_function, api_key, lang, value)
     try:
         data = requests.get(url)
     except requests.RequestException:
