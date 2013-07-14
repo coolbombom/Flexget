@@ -241,7 +241,7 @@ class ApiTmdb(object):
             log.debug('Movie %s not found in cache, looking up from tmdb.' % id_str())
             try:
                 if imdb_id and not tmdb_id:
-                    result = get_first_result('imdbLookup', imdb_id)
+                    result = get_first_result('movie/'+imdb_id, '')
                     if result:
                         movie = session.query(TMDBMovie).filter(TMDBMovie.id == result['id']).first()
                         if movie:
@@ -258,7 +258,7 @@ class ApiTmdb(object):
                     else:
                         movie = None
                 elif title:
-                    result = get_first_result('search', search_string)
+                    result = get_first_result('search/movie', search_string)
                     if result:
                         movie = session.query(TMDBMovie).filter(TMDBMovie.id == result['id']).first()
                         if not movie:
@@ -284,7 +284,7 @@ class ApiTmdb(object):
 
         if not movie.id:
             raise LookupError('Cannot get tmdb details without tmdb id')
-        result = get_first_result('getInfo', movie.id)
+        result = get_first_result('movie/'+movie.id,'')
         if result:
             movie.update_from_dict(result)
             posters = result.get('posters')
@@ -315,7 +315,7 @@ def get_first_result(tmdb_function, value):
         value = value.encode('utf-8')
     if isinstance(value, basestring):
         value = quote(value, safe=b'')
-    url = '%s/2.1/Movie.%s/%s/json/%s/%s' % (server, tmdb_function, lang, api_key, value)
+    url = '%s/3/%s?api_key=%s&append_to_response=images&query=%s' % (server, tmdb_function, api_key, value)
     try:
         data = requests.get(url)
     except requests.RequestException:
@@ -326,6 +326,8 @@ def get_first_result(tmdb_function, value):
     except ValueError:
         log.warning('TMDb returned invalid json.')
         return
+    if (tmdb_function == 'search/movie'):
+        result = get_first_result('movie/'+result['results'][0]['id'],'')
     # Make sure there is a valid result to return
     if isinstance(result, list) and len(result):
         result = result[0]
