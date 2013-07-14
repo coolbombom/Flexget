@@ -327,11 +327,12 @@ def get_first_result(tmdb_function, value):
         log.warning('TMDb returned invalid json.')
         return
     if (tmdb_function == 'search/movie'):
-        result = get_first_result('movie/'+result['results'][0]['id'],'')
+        if isinstance(result, list) and result['results'][0].get('id'):
+            result = get_first_result('movie/'+result['results'][0]['id'],'')
     # Make sure there is a valid result to return
     if isinstance(result, list) and len(result):
         result = result[0]
-        if isinstance(result, dict) and result.get('id'):
-            return result
+    if isinstance(result, dict) and result.get('id'):
+        return result
 
 register_plugin(ApiTmdb, 'api_tmdb')
